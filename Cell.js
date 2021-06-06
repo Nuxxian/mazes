@@ -1,32 +1,64 @@
 class Cell {
-    constructor(i, j, x0, y0, width = 50) {
+    constructor(i, j, x0, y0, width = 50, color) {
+        this.color = color;
         this.width = width;
         this.i = i;
         this.j = j;
         this.x = x0 + width*i;
         this.y = y0 + width*j;
-        this.color = [200, 200, 200];
+        this.rect_color;
+        this.wall_state = [1, 1, 1, 1]; //N, O, Z, W ; 1 = show, 0 = hide
+        this.state = 0; //0: unvisited, 1: visited, 2: current
     }
+
     update() {
         this.show();
     }
+    
     show() {
         push();
-            stroke(this.color[0], this.color[1], this.color[2]);
+            stroke(200);
             strokeWeight(2);
-            line(this.x, this.y, this.x + this.width, this.y);
-            line(this.x, this.y, this.x, this.y + this.width);
-            line(this.x + this.width, this.y, this.x + this.width, this.y + this.width);
-            line(this.x, this.y + this.width, this.x + this.width, this.y + this.width);
+            if (this.wall_state[0]) line(this.x, this.y, this.x + this.width, this.y);
+            if (this.wall_state[1]) line(this.x + this.width, this.y, this.x + this.width, this.y + this.width);
+            if (this.wall_state[2]) line(this.x, this.y + this.width, this.x + this.width, this.y + this.width);
+            if (this.wall_state[3]) line(this.x, this.y, this.x, this.y + this.width);
         pop();
 
-    }
-    highlight() {
+        switch(this.state) {
+            case 0:
+                this.rect_color = [this.color, this.color, this.color];
+                break;
+            case 1:
+                this.rect_color = [100, 100, 100];
+                break;
+            case 2:
+                this.rect_color = [100, 100, 200]
+                break;
+        }
         push();
-            fill(120, 50, 150);
+            fill(this.rect_color[0], this.rect_color[1], this.rect_color[2]);
             strokeWeight(2);
             stroke(200);
             rect(this.x, this.y, this.width, this.width);
         pop();
+    }
+    
+    visited(dir) {
+        switch(dir) {
+            case 'N':
+                this.wall_state[0] = 0;
+                break;
+            case 'E':
+                this.wall_state[1] = 0;
+                break;
+            case 'S':
+                this.wall_state[2] = 0;
+                break;
+            case 'W':
+                this.wall_state[3] = 0;
+                break;
+        }
+        state = 1;
     }
 }
