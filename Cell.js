@@ -16,15 +16,7 @@ class Cell {
     }
     
     show() {
-        push();
-            stroke(200);
-            strokeWeight(2);
-            if (this.wall_state[0]) line(this.x, this.y, this.x + this.width, this.y);
-            if (this.wall_state[1]) line(this.x + this.width, this.y, this.x + this.width, this.y + this.width);
-            if (this.wall_state[2]) line(this.x, this.y + this.width, this.x + this.width, this.y + this.width);
-            if (this.wall_state[3]) line(this.x, this.y, this.x, this.y + this.width);
-        pop();
-
+        
         switch(this.state) {
             case 0:
                 this.rect_color = [this.color, this.color, this.color];
@@ -37,10 +29,18 @@ class Cell {
                 break;
         }
         push();
+            strokeWeight(0)
             fill(this.rect_color[0], this.rect_color[1], this.rect_color[2]);
-            strokeWeight(2);
-            stroke(200);
             rect(this.x, this.y, this.width, this.width);
+        pop();
+        push();
+            stroke(200);
+            if (this.state == 0) strokeWeight(1);
+            else strokeWeight(2);
+            if (this.wall_state[0]) line(this.x, this.y, this.x + this.width, this.y);
+            if (this.wall_state[1]) line(this.x + this.width, this.y, this.x + this.width, this.y + this.width);
+            if (this.wall_state[2]) line(this.x, this.y + this.width, this.x + this.width, this.y + this.width);
+            if (this.wall_state[3]) line(this.x, this.y, this.x, this.y + this.width);
         pop();
     }
     
@@ -59,6 +59,5 @@ class Cell {
                 this.wall_state[3] = 0;
                 break;
         }
-        state = 1;
     }
 }
