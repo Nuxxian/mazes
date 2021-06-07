@@ -7,31 +7,50 @@ class Grid {
 		this.y0 = height / 2 - (m / 2) * this.width;
 		this.grid = [];
 		this.color = color;
+		this.count_visited = 0;
 		for (let i = 0; i < this.n; i++) {
 			this.grid[i] = [];
 			for (let j = 0; j < this.m; j++) {
-				console.log(i);
 				this.grid[i][j] = new Cell(i, j, this.x0, this.y0, this.width, this.color);
 			}
 		}
 		this.stack = [];
 		this.current;
 		this.state = 0; //0 not started, 1 buzzy, 2 ready, 3 playing, 4 exit found
+		this.event = '';
+		this.player;
 	}
 	update() {
 		//Initialize grid
-		this.draw_border();
 		for (let i = 0; i < this.n; i++) {
 			for (let j = 0; j < this.m; j++) {
 				this.grid[i][j].update();
 			}
 		}
-		this.make_maze('DFB')
+		this.draw_border();
+		this.keyReleased();
+		switch(this.state) {
+			case 0:
+				this.mousePressed(mouseX, mouseY);
+				break;
+			case 1:
+				this.make_maze('DFB');
+				break;
+			case 2:
+				this.initgame();
+				break;
+			case 3:
+				this.play();
+				break;
+			default:
+				break;
+		}
+		this.event = '';
 	}
 	draw_border() {
 		if (this.state < 2) {
 			push();
-				strokeWeight(5);
+				strokeWeight(2);
 				stroke(255)
 				line(this.x0, this.y0, this.x0 + this.n*this.width, this.y0);
 				line(this.x0, this.y0, this.x0, this.y0  + this.m*this.width);
@@ -47,6 +66,9 @@ class Grid {
 				line(this.x0, this.y0 + this.m*this.width, this.x0 + this.n*this.width, this.y0 + this.m*this.width);
 				line(this.x0 + this.n*this.width, this.y0, this.x0 + this.n*this.width, this.y0 + (this.m - 1)*this.width);
 			pop();
+			this.grid[0][0].wall_state[3] = 0;
+			this.grid[this.n - 1][this.m - 1].wall_state[1] = 0;
+
 		}
  	}
 	make_maze(algorthim) {
@@ -115,7 +137,6 @@ class Grid {
 				this.current.visited(this.complement(dir))
 				this.current.state = 2;
 				this.stack.push(this.current);
-				console.log(this.current.wall_state)
 			}
 			else {
 				this.current.state = 1;
@@ -123,9 +144,15 @@ class Grid {
 				if (this.current) this.current.state = 2;
 				else console.log('full')
 			}
-		} else  {
+		} else {
 			this.grid[0][0].visited('W');
 			this.grid[this.n-1][this.m-1].visited('E')
+			this.state = 2;
+		}
+		if (this.check_state() == this.n*this.m - 1) {
+			noLoop()
+			setTimeout(loop(), 1000);
+			this.current.state = 1;
 			this.state = 2;
 		}
 	}
@@ -147,16 +174,108 @@ class Grid {
 		return false;
     }
 	mousePressed(xi, yi) {
-		let x = xi - this.x0;
-		let y = yi -this.y0;
-		let i = floor(x / this.width);
-		let j = floor(y / this.width);
-		if ((i < this.n && i >= 0) && (j < this.m && j >= 0)) {
-			if (this.state == 0) {
+		if (this.event == 'mousePressed') {
+			let x = xi - this.x0;
+			let y = yi -this.y0;
+			let i = floor(x / this.width);
+			let j = floor(y / this.width);
+			if ((i < this.n && i >= 0) && (j < this.m && j >= 0)) {
 				this.state = 1;
 				this.current = this.get_cell(i, j);
 				this.stack[0] = this.current;
 			}
 		}
 	}
+	keyReleased() {
+		if (this.event == 'keyReleased') {
+			if (keyCode == 82) {
+				this.reset(1);
+			}
+			if (keyCode == 32 && this.state > 2) {
+				this.reset(2);
+			}
+		}
+	}
+	initgame() {
+		this.player = new Player(this.grid[0][0]);
+		this.player.current.state = 3
+		this.state = 3;
+	}
+	play() {
+		if (this.event == 'keyReleased') {
+			if (keyCode == 90) {
+				if (this.player.check_move(this.grid, 'N', this.n, this.m) != -1) {
+					this.player.move(this.player.check_move(this.grid, 'N', this.n, this.m));
+				}
+			}
+			if (keyCode == 68) {
+				if (this.player.check_move(this.grid, 'E', this.n, this.m) != -1) {
+					this.player.move(this.player.check_move(this.grid, 'E', this.n, this.m));
+				}
+			}
+			if (keyCode == 83) {
+				if (this.player.check_move(this.grid, 'S', this.n, this.m) != -1) {
+					this.player.move(this.player.check_move(this.grid, 'S', this.n, this.m));
+				}
+			}
+			if (keyCode == 81) {
+				if (this.player.check_move(this.grid, 'W', this.n, this.m) != -1) {
+					this.player.move(this.player.check_move(this.grid, 'W', this.n, this.m));
+				}
+			}
+		}
+		if (keyCode == 38) {
+			if (this.player.check_move(this.grid, 'N', this.n, this.m) != -1) {
+				this.player.move(this.player.check_move(this.grid, 'N', this.n, this.m));
+			}
+		}
+		if (keyCode == 39) {
+			if (this.player.check_move(this.grid, 'E', this.n, this.m) != -1) {
+				this.player.move(this.player.check_move(this.grid, 'E', this.n, this.m));
+			}
+		}
+		if (keyCode == 40) {
+			if (this.player.check_move(this.grid, 'S', this.n, this.m) != -1) {
+				this.player.move(this.player.check_move(this.grid, 'S', this.n, this.m));
+			}
+		}
+		if (keyCode == 37) {
+			if (this.player.check_move(this.grid, 'W', this.n, this.m) != -1) {
+				this.player.move(this.player.check_move(this.grid, 'W', this.n, this.m));
+			}
+		}
+		if (this.player.victory(this.n, this.m)) this.state = 4;
+	}
+	reset(status) {
+		switch(status) {
+			case 1:
+				this.state = 0;
+				this.check_state(1, 0);	
+				break;
+			case 2:
+				this.player.current.state = 1;
+				this.state = 2;
+				break;
+		}
+			
+	}
+	check_state(ws = -1, N = -1) {
+		let count = 0;
+		for (let i = 0; i < this.n; i++) {
+			for (let j = 0; j < this.m; j++) {
+				if (N != -1) {
+					this.grid[i][j].state = N;
+				} else {
+					if (this.grid[i][j].state == 1) {
+						count++;
+					}
+				}
+				if (ws == 1) {
+					this.grid[i][j].wall_state = [1, 1, 1, 1]
+				}
+			}
+		}
+		if (count != 0) return count;
+	}
+
 }

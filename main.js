@@ -12,13 +12,13 @@
 //    2. make it the current cell
 
 let grid;
-let bwidth = 25;
-let bcolor = 50;
+let bwidth = 50;
+let bcolor = 150;
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
-  let easyn =  width /*10 */ 
-  let easym = height /* 10 */ 
+  createCanvas(windowWidth, windowHeight - 1);
+  let easyn =  20 //width
+  let easym =  10 //height /* 10 */ 
   let n = floor(min(easyn, ((width - 50)/bwidth)));
   let m = floor(min(easym, ((height - 50)/bwidth)));
   grid = new Grid(n, m, bwidth, bcolor);
@@ -26,12 +26,16 @@ function setup() {
 
 function draw() {
   //frameRate(15)
-  background(bcolor);
+  background(25);
   grid.update();
 }
 
 function mousePressed() {
-  grid.mousePressed(mouseX, mouseY);
+  grid.event = 'mousePressed'
+}
+
+function keyReleased() {
+  grid.event = 'keyReleased'
 }
 
 function windowResized()
