@@ -27,19 +27,24 @@ class Grid {
 				this.grid[i][j].update();
 			}
 		}
-		this.draw_border();
 		this.keyReleased();
 		switch(this.state) {
 			case 0:
 				this.mousePressed(mouseX, mouseY);
+				this.draw_border();
+
 				break;
 			case 1:
+				this.draw_border();
 				this.make_maze('DFB');
 				break;
 			case 2:
+				frameRate(2);
 				this.initgame();
 				break;
 			case 3:
+				frameRate(60)
+				this.draw_border();
 				this.play();
 				break;
 			default:
@@ -51,20 +56,20 @@ class Grid {
 		if (this.state < 2) {
 			push();
 				strokeWeight(2);
-				stroke(255)
+				stroke(200)
 				line(this.x0, this.y0, this.x0 + this.n*this.width, this.y0);
 				line(this.x0, this.y0, this.x0, this.y0  + this.m*this.width);
 				line(this.x0, this.y0 + this.m*this.width, this.x0 + this.n*this.width, this.y0 + this.m*this.width);
 				line(this.x0 + this.n*this.width, this.y0, this.x0 + this.n*this.width, this.y0 + this.m*this.width);
 			pop();
-		} else if (this.state > 1) {
+		} else if (this.state > 2) {
 			push();
-				strokeWeight(5);
+				strokeWeight(4);
 				stroke(255)
-				line(this.x0, this.y0, this.x0 + this.n*this.width, this.y0);
-				line(this.x0, this.y0 + this.width, this.x0, this.y0  + this.m*this.width);
-				line(this.x0, this.y0 + this.m*this.width, this.x0 + this.n*this.width, this.y0 + this.m*this.width);
-				line(this.x0 + this.n*this.width, this.y0, this.x0 + this.n*this.width, this.y0 + (this.m - 1)*this.width);
+				rect(this.x0, this.y0, this.n*this.width, 1);
+				rect(this.x0, this.y0 + this.width,1 , (this.m-1)*this.width);
+				rect(this.x0, this.y0 + this.m*this.width, this.n*this.width, 1);
+				rect(this.x0 + this.n*this.width, this.y0, 1, (this.m - 1)*this.width);
 			pop();
 			this.grid[0][0].wall_state[3] = 0;
 			this.grid[this.n - 1][this.m - 1].wall_state[1] = 0;
@@ -149,9 +154,7 @@ class Grid {
 			this.grid[this.n-1][this.m-1].visited('E')
 			this.state = 2;
 		}
-		if (this.check_state() == this.n*this.m - 1) {
-			noLoop()
-			setTimeout(loop(), 1000);
+		if (this.check_state() == this.n*this.m) {
 			this.current.state = 1;
 			this.state = 2;
 		}
@@ -266,7 +269,7 @@ class Grid {
 				if (N != -1) {
 					this.grid[i][j].state = N;
 				} else {
-					if (this.grid[i][j].state == 1) {
+					if (this.grid[i][j].state >= 1) {
 						count++;
 					}
 				}
