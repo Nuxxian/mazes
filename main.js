@@ -10,18 +10,18 @@
 //  2. else if stack is not empty
 //    1. pop a cell from the stack
 //    2. make it the current cell
-let width = 1536//1000;
-let height = 753;
+
 let grid;
 let bwidth = 25;
 let bcolor = 50;
-let easyn =  width /*10 */ 
-let easym = height /* 10 */ 
+
 function setup() {
+  createCanvas(windowWidth, windowHeight);
+  let easyn =  width /*10 */ 
+  let easym = height /* 10 */ 
   let n = floor(min(easyn, ((width - 50)/bwidth)));
   let m = floor(min(easym, ((height - 50)/bwidth)));
   grid = new Grid(n, m, bwidth, bcolor);
-  createCanvas(width, height);
 }
 
 function draw() {
@@ -33,3 +33,8 @@ function draw() {
 function mousePressed() {
   grid.mousePressed(mouseX, mouseY);
 }
+
+function windowResized()
+ {
+   resizeCanvas(windowWidth, windowHeight)
+ }
