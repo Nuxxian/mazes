@@ -48,7 +48,7 @@ class Grid {
 				this.play();
 				break;
 			default:
-				break;
+				this.draw_border();
 		}
 		this.event = '';
 	}
@@ -66,6 +66,7 @@ class Grid {
 			push();
 				strokeWeight(4);
 				stroke(255)
+				rectMode(TOP)
 				rect(this.x0, this.y0, this.n*this.width, 1);
 				rect(this.x0, this.y0 + this.width,1 , (this.m-1)*this.width);
 				rect(this.x0, this.y0 + this.m*this.width, this.n*this.width, 1);

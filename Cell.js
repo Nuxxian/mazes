@@ -35,7 +35,7 @@ class Cell {
         push();
             stroke(200);
             if (this.state == 0) strokeWeight(1);
-            else strokeWeight(3);
+            else strokeWeight(2);
             if (this.wall_state[0]) line(this.x, this.y, this.x + this.width, this.y);
             if (this.wall_state[1]) line(this.x + this.width, this.y, this.x + this.width, this.y + this.width);
             if (this.wall_state[2]) line(this.x, this.y + this.width, this.x + this.width, this.y + this.width);
