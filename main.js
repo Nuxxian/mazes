@@ -16,7 +16,7 @@ let bwidth = 25;
 let bcolor = 50;
 
 function setup() {
-  createCanvas(windowWidth, windowHeight - 1);
+  createCanvas(windowWidth, windowHeight);
   let easyn =  width /*10 */ 
   let easym = height /* 10 */ 
   let n = floor(min(easyn, ((width - 50)/bwidth)));
@@ -36,5 +36,5 @@ function mousePressed() {
 
 function windowResized()
  {
-   resizeCanvas(windowWidth, windowHeight - 1)
+   resizeCanvas(windowWidth, windowHeight)
  }
