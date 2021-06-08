@@ -20,7 +20,7 @@ function setup() {
   createCanvas(windowWidth, windowHeight - 1);
   let easyn = width
   let easym = height /* 10 */ 
-  let n = 24//floor(min(easyn, ((width - 50)/bwidth))) + 1;
+  let n = 40//floor(min(easyn, ((width - 50)/bwidth))) + 1;
   let m = 24//floor(min(easym, ((height - 50)/bwidth))) - 2;
   console.log(n, m)
   grid = new Grid(n, m, bwidth, bcolor, divide);

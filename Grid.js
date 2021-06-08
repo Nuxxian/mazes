@@ -20,6 +20,13 @@ class Grid {
 		this.event = '';
 		this.player;
 		this.divide = divide;
+
+		let factor = -1
+		if (this.m%2 == 1) factor = 0;
+		this.startpos = [0, floor(this.m/2)+factor]
+		this.endpos = [this.n - 1, floor(this.m/2) + factor]
+		console.log(this.startpos, this.endpos)
+
 		for (let i = 0; i < this.divide*this.divide; i++) {
 			this.stack[i] = [];	
 		}
