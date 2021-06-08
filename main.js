@@ -17,15 +17,20 @@ let bcolor = 150;
 
 function setup() {
   createCanvas(windowWidth, windowHeight - 1);
-  let easyn =  20 //width
-  let easym =  10 //height /* 10 */ 
-  let n = floor(min(easyn, ((width - 50)/bwidth)));
+  let easyn = 12//width
+  let easym = 12//height /* 10 */ 
+  let n = floor(min(easyn, ((width - 50)/bwidth))) ;
   let m = floor(min(easym, ((height - 50)/bwidth)));
-  grid = new Grid(n, m, bwidth, bcolor);
+  console.log(n, m)
+  if (n%2 + m%2 != 0 ){
+    console.log("Geen even dimensies")
+  } else {
+    grid = new Grid(n, m, bwidth, bcolor);
+  }
 }
 
 function draw() {
-  //frameRate(15)
+ // frameRate(10)
   background(25);
   grid.update();
 }

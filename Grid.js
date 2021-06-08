@@ -15,10 +15,15 @@ class Grid {
 			}
 		}
 		this.stack = [];
-		this.current;
+		this.current = [];
 		this.state = 0; //0 not started, 1 buzzy, 2 ready, 3 playing, 4 exit found
 		this.event = '';
 		this.player;
+		this.divide = 3;
+		for (let i = 0; i < this.divide*this.divide; i++) {
+			this.stack[i] = [];	
+		}
+		
 	}
 	update() {
 		//Initialize grid
@@ -66,37 +71,38 @@ class Grid {
 			push();
 				strokeWeight(4);
 				stroke(255)
-				rectMode(TOP)
 				rect(this.x0, this.y0, this.n*this.width, 1);
-				rect(this.x0, this.y0 + this.width,1 , (this.m-1)*this.width);
 				rect(this.x0, this.y0 + this.m*this.width, this.n*this.width, 1);
-				rect(this.x0 + this.n*this.width, this.y0, 1, (this.m - 1)*this.width);
+				rect(this.x0, this.y0, 1, (floor(this.m)/2)*this.width);
+				rect(this.x0, this.y0 + (floor(this.m/2) + 1)*this.width, 1, (floor(this.m/2)-1)*this.width);
+				rect(this.x0 + this.n*this.width, this.y0, 1, (floor(this.m)/2)*this.width);
+				rect(this.x0 + this.n*this.width, this.y0 + (floor(this.m/2) + 1)*this.width, 1, (floor(this.m/2)-1)*this.width);
 			pop();
-			this.grid[0][0].wall_state[3] = 0;
-			this.grid[this.n - 1][this.m - 1].wall_state[1] = 0;
+			this.grid[0][floor(this.m/2)].wall_state[3] = 0;
+			this.grid[this.n - 1][floor(this.m/2)].wall_state[1] = 0;
 
 		}
  	}
 	make_maze(algorthim) {
 		if (algorthim == 'DFB') {
 			if (this.state == 1) {
-				this.algorithm();
+				this.algorithm(this.divide*this.divide);
 			}
 		}
 	}
 	get_cell(i, j) {
 		return this.grid[i][j];
 	}
-	choose_neighbour() {
-		let i = this.current.i;
-		let j = this.current.j;
+	choose_neighbour(I, minn, minm, maxn, maxm) {
+		let i = this.current[I].i;
+		let j = this.current[I].j;
 		let neighbours = [];
 		let dir = [];
 		let N, E, S, W = undefined;
-		if (j != 0) N = this.grid[i][j - 1];
-		if (i != this.n - 1) E = this.grid[i + 1][j]; 
-		if (j != this.m - 1) S = this.grid[i][j + 1]; 
-		if (i != 0) W = this.grid[i - 1][j]; 
+		if (j != minm) N = this.grid[i][j - 1];
+		if (i != maxn - 1) E = this.grid[i + 1][j]; 
+		if (j != maxm - 1) S = this.grid[i][j + 1]; 
+		if (i != minn) W = this.grid[i - 1][j]; 
 
 		if (N&& N.state != 1) {
 			neighbours.push(N);
@@ -132,32 +138,35 @@ class Grid {
 				return 'E';
 		}
 	}
-	algorithm() {
-		if (this.current) {
-			let res = this.choose_neighbour();
-			if (res[0]) {
-				let dir = res[1];
-				this.current.state = 1;
-				this.current.visited(dir);
-				this.current = res[0];
-				this.current.visited(this.complement(dir))
-				this.current.state = 2;
-				this.stack.push(this.current);
+	algorithm(N) {
+		for (let i = 0; i < N; i++) { //van links naar rechts, boven naar onder
+			let x0 = index(i, N)[0];
+			let y0 = index(i, N)[1]
+			let partn = this.n/sqrt(N);
+			let partm = this.m/sqrt(N);
+			if (this.current[i]) {
+				let res = this.choose_neighbour(i, x0*partn, y0*partm, x0*partn + partn, y0*partm + partm);
+				if (res[0]) {
+					let dir = res[1];
+					this.current[i].state = 1;
+					this.current[i].visited(dir);
+					this.current[i] = res[0];
+					this.current[i].visited(this.complement(dir))
+					this.current[i].state = 2;
+					this.stack[i].push(this.current[i]);
+				}
+				else {
+					this.current[i].state = 1;
+					this.current[i] = this.stack[i].pop()
+					if (this.current[i]) this.current[i].state = 2;
+				}
 			}
-			else {
-				this.current.state = 1;
-				this.current = this.stack.pop()
-				if (this.current) this.current.state = 2;
-				else console.log('full')
-			}
-		} else {
-			this.grid[0][0].visited('W');
-			this.grid[this.n-1][this.m-1].visited('E')
-			this.state = 2;
-		}
-		if (this.check_state() == this.n*this.m) {
-			this.current.state = 1;
-			this.state = 2;
+			if (this.check_state() == this.n*this.m) {
+				for (let i = 0; i < N; i++) {
+					this.current[i].state = 1;
+				}
+				this.state = 2;
+			}			
 		}
 	}
 	has_available_neighbour() {
@@ -177,17 +186,56 @@ class Grid {
 		}
 		return false;
     }
+	split_up() {
+		let amount_walls = this.divide*this.divide - 1;
+		let walls = [];
+		for (let i = 0; i < 2*(this.divide*this.divide - this.divide); i++) {
+			walls[i] = random();
+		}
+		let chosen_walls = get_n_highest(amount_walls, walls)
+		console.log(chosen_walls)
+		for (let i = 0; i < this.divide*this.divide; i++) {
+			let [x, y] = index(i, this.divide*this.divide);
+			let N = this.n/this.divide;
+			let M = this.m/this.divide;
+			let del = [-1, -1];
+			if (x == this.divide - 1) {
+				if (y != this.divide - 1) {
+					if (chosen_walls.includes(x+y*this.divide)) del = [-1, floor(random(N))];
+				}
+			} else if (y == this.divide - 1) {
+				if (chosen_walls.includes(x+y*this.divide)) del = [floor(random(M)), -1];
+			} else {
+				if (chosen_walls.includes(x+y*this.divide)) del = [floor(random(M)), floor(random(N))];
+			}
+
+
+			if (del[0] != -1) {
+				this.grid[(x+1)*N - 1][y*M + del[0]].visited('E');
+				this.grid[(x+1)*N][y*M + del[0]].visited('W');
+
+			}
+			if (del[1] != -1) {
+				this.grid[x*N + del[1]][M*(y + 1) - 1].visited('S');
+				this.grid[x*N + del[1]][M*(y + 1)].visited('N');
+			}
+
+		}
+	}
 	mousePressed(xi, yi) {
 		if (this.event == 'mousePressed') {
+			/*
 			let x = xi - this.x0;
 			let y = yi -this.y0;
 			let i = floor(x / this.width);
 			let j = floor(y / this.width);
-			if ((i < this.n && i >= 0) && (j < this.m && j >= 0)) {
-				this.state = 1;
-				this.current = this.get_cell(i, j);
-				this.stack[0] = this.current;
-			}
+			*/
+			for (let i = 0; i < this.divide*this.divide; i++) {
+				let x = index(i, this.divide*this.divide);
+				this.current[i] = this.grid[x[0]*this.n/this.divide][x[1]*this.m/this.divide];
+				this.stack[i][0] = this.current[i];
+			}			
+			this.state = 1;
 		}
 	}
 	keyReleased() {
@@ -201,7 +249,8 @@ class Grid {
 		}
 	}
 	initgame() {
-		this.player = new Player(this.grid[0][0]);
+		this.player = new Player(this.grid[0][floor(this.m / 2)]);
+		this.split_up()
 		this.player.current.state = 3
 		this.state = 3;
 	}
@@ -248,7 +297,7 @@ class Grid {
 				this.player.move(this.player.check_move(this.grid, 'W', this.n, this.m));
 			}
 		}
-		if (this.player.victory(this.n, this.m)) this.state = 4;
+		if (this.player.victory(this.n, floor(this.m/2) + 1)) this.state = 4;
 	}
 	reset(status) {
 		switch(status) {
@@ -281,5 +330,31 @@ class Grid {
 		}
 		if (count != 0) return count;
 	}
+}
 
+function index(i, max) {
+	let n = sqrt(max);
+	return [i%n, floor(i/n)%n]
+}
+
+function get_n_highest(n, L) {
+	let res = [];
+	for (const el of L) {
+		if (res.length < n) res.push(el);
+		else if (minimum(res) < el) {
+			res.splice(res.indexOf(minimum(res)), 1);
+			res.push(el);
+		}
+	}
+	for (let i = 0; i < n; i++) {
+		res[i] = L.indexOf(res[i]);
+	}
+	return res;
+}
+function minimum(L) {
+	let res = L[0];
+	for (const el of L) {
+		if (el < res) res = el;
+	}
+	return res;
 }
