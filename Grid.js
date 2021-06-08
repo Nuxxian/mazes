@@ -19,7 +19,7 @@ class Grid {
 		this.state = 0; //0 not started, 1 buzzy, 2 ready, 3 playing, 4 exit found
 		this.event = '';
 		this.player;
-		this.divide = 3;
+		this.divide = 1;
 		for (let i = 0; i < this.divide*this.divide; i++) {
 			this.stack[i] = [];	
 		}
@@ -71,22 +71,29 @@ class Grid {
 			push();
 				strokeWeight(4);
 				stroke(255)
+				let middle;
+				let factor = 1
+				if (this.m%2 == 0) middle = this.m/2 - 1;
+				else {
+					middle = floor(this.m/2)
+					factor = 0;
+				}
 				rect(this.x0, this.y0, this.n*this.width, 1);
 				rect(this.x0, this.y0 + this.m*this.width, this.n*this.width, 1);
-				rect(this.x0, this.y0, 1, (floor(this.m)/2)*this.width);
-				rect(this.x0, this.y0 + (floor(this.m/2) + 1)*this.width, 1, (floor(this.m/2)-1)*this.width);
-				rect(this.x0 + this.n*this.width, this.y0, 1, (floor(this.m)/2)*this.width);
-				rect(this.x0 + this.n*this.width, this.y0 + (floor(this.m/2) + 1)*this.width, 1, (floor(this.m/2)-1)*this.width);
+				rect(this.x0, this.y0, 1, middle*this.width);
+				rect(this.x0, this.y0 + (middle + 1)*this.width, 1, (middle + factor)*this.width);
+				rect(this.x0 + this.n*this.width, this.y0, 1, (middle)*this.width);
+				rect(this.x0 + this.n*this.width, this.y0 + (middle+1)*this.width, 1, (middle + factor)*this.width);
 			pop();
-			this.grid[0][floor(this.m/2)].wall_state[3] = 0;
-			this.grid[this.n - 1][floor(this.m/2)].wall_state[1] = 0;
+			this.grid[0][middle].wall_state[3] = 0;
+			this.grid[this.n - 1][middle].wall_state[1] = 0;
 
 		}
  	}
 	make_maze(algorthim) {
 		if (algorthim == 'DFB') {
 			if (this.state == 1) {
-				this.algorithm(this.divide*this.divide);
+				this.DFB(this.divide*this.divide);
 			}
 		}
 	}
@@ -138,7 +145,9 @@ class Grid {
 				return 'E';
 		}
 	}
-	algorithm(N) {
+
+	// algorthims
+	DFB(N) {
 		for (let i = 0; i < N; i++) { //van links naar rechts, boven naar onder
 			let x0 = index(i, N)[0];
 			let y0 = index(i, N)[1]
@@ -169,6 +178,11 @@ class Grid {
 			}			
 		}
 	}
+	Division() {
+
+	}
+
+	//end algorithms
 	has_available_neighbour() {
         let i = this.current.i;
 		let j = this.current.j;
@@ -249,7 +263,10 @@ class Grid {
 		}
 	}
 	initgame() {
-		this.player = new Player(this.grid[0][floor(this.m / 2)]);
+		
+		let factor = 0;
+		if (this.m%2 != 0) factor = 1
+		this.player = new Player(this.grid[0][floor(this.m / 2) - 1 + factor]);
 		this.split_up()
 		this.player.current.state = 3
 		this.state = 3;
@@ -297,7 +314,9 @@ class Grid {
 				this.player.move(this.player.check_move(this.grid, 'W', this.n, this.m));
 			}
 		}
-		if (this.player.victory(this.n, floor(this.m/2) + 1)) this.state = 4;
+		let factor = 0;
+		if (this.m%2 != 0) factor = 1;
+		if (this.player.victory(this.n, floor(this.m/2) + factor)) this.state = 4;
 	}
 	reset(status) {
 		switch(status) {

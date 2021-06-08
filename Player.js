@@ -28,6 +28,6 @@ class Player {
         this.current.state = 3;
     }
     victory(n, m) {
-        if (this.current.i == n - 1 && this.current.j == m - 1) return 'won';
+        if (this.current.i == n - 1 && this.current.j == m - 1) return 1;
     }
 }
