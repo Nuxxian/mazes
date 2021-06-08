@@ -1,5 +1,5 @@
 class Grid {
-	constructor(n, m, bwidth, color) {
+	constructor(n, m, bwidth, color, divide) {
 		this.n = n;
 		this.m = m;
 		this.width = bwidth;
@@ -11,7 +11,7 @@ class Grid {
 		for (let i = 0; i < this.n; i++) {
 			this.grid[i] = [];
 			for (let j = 0; j < this.m; j++) {
-				this.grid[i][j] = new Cell(i, j, this.x0, this.y0, this.width, this.color);
+				this.grid[i][j] = new Cell(i, j, this.width, this.x0, this.y0, this.color);
 			}
 		}
 		this.stack = [];
@@ -19,9 +19,20 @@ class Grid {
 		this.state = 0; //0 not started, 1 buzzy, 2 ready, 3 playing, 4 exit found
 		this.event = '';
 		this.player;
-		this.divide = 1;
+		this.divide = divide;
 		for (let i = 0; i < this.divide*this.divide; i++) {
 			this.stack[i] = [];	
+		}
+		if (this.divide > 1) {
+			this.splitmaze = [];
+			for (let i = 0; i < this.divide; i++) {
+				this.splitmaze[i] = [];
+				for (let j = 0; j < this.divide; j++) {
+					this.splitmaze[i][j] = new Cell(i, j, 25);
+				}
+			}
+			this.splitcurrent;
+			this.splitstack;
 		}
 		
 	}
@@ -30,6 +41,7 @@ class Grid {
 		for (let i = 0; i < this.n; i++) {
 			for (let j = 0; j < this.m; j++) {
 				this.grid[i][j].update();
+				if (i < this.divide && j < this.divide) this.splitmaze[i][j].update()
 			}
 		}
 		this.keyReleased();
@@ -100,16 +112,22 @@ class Grid {
 	get_cell(i, j) {
 		return this.grid[i][j];
 	}
-	choose_neighbour(I, minn, minm, maxn, maxm) {
-		let i = this.current[I].i;
-		let j = this.current[I].j;
+	choose_neighbour(I,G, curr, minn = 0, minm = 0, maxn = this.n, maxm = this.n) {
+		let grid = G
+		let current = curr
+		let i = current.i;
+		let j = current.j;
+		if (I != -1) {
+			i = current[I].i;
+			j = current[I].j;
+		}
 		let neighbours = [];
 		let dir = [];
 		let N, E, S, W = undefined;
-		if (j != minm) N = this.grid[i][j - 1];
-		if (i != maxn - 1) E = this.grid[i + 1][j]; 
-		if (j != maxm - 1) S = this.grid[i][j + 1]; 
-		if (i != minn) W = this.grid[i - 1][j]; 
+		if (j != minm) N = grid[i][j - 1];
+		if (i != maxn - 1) E = grid[i + 1][j]; 
+		if (j != maxm - 1) S = grid[i][j + 1]; 
+		if (i != minn) W = grid[i - 1][j]; 
 
 		if (N&& N.state != 1) {
 			neighbours.push(N);
@@ -145,7 +163,6 @@ class Grid {
 				return 'E';
 		}
 	}
-
 	// algorthims
 	DFB(N) {
 		for (let i = 0; i < N; i++) { //van links naar rechts, boven naar onder
@@ -154,7 +171,7 @@ class Grid {
 			let partn = this.n/sqrt(N);
 			let partm = this.m/sqrt(N);
 			if (this.current[i]) {
-				let res = this.choose_neighbour(i, x0*partn, y0*partm, x0*partn + partn, y0*partm + partm);
+				let res = this.choose_neighbour(i, this.grid, this.current, x0*partn, y0*partm, x0*partn + partn, y0*partm + partm);
 				if (res[0]) {
 					let dir = res[1];
 					this.current[i].state = 1;
@@ -178,10 +195,6 @@ class Grid {
 			}			
 		}
 	}
-	Division() {
-
-	}
-
 	//end algorithms
 	has_available_neighbour() {
         let i = this.current.i;
@@ -201,29 +214,19 @@ class Grid {
 		return false;
     }
 	split_up() {
-		let amount_walls = this.divide*this.divide - 1;
-		let walls = [];
-		for (let i = 0; i < 2*(this.divide*this.divide - this.divide); i++) {
-			walls[i] = random();
-		}
-		let chosen_walls = get_n_highest(amount_walls, walls)
-		console.log(chosen_walls)
+		this.help_maze();
+		console.log(this.splitmaze)
 		for (let i = 0; i < this.divide*this.divide; i++) {
 			let [x, y] = index(i, this.divide*this.divide);
 			let N = this.n/this.divide;
 			let M = this.m/this.divide;
 			let del = [-1, -1];
-			if (x == this.divide - 1) {
-				if (y != this.divide - 1) {
-					if (chosen_walls.includes(x+y*this.divide)) del = [-1, floor(random(N))];
-				}
-			} else if (y == this.divide - 1) {
-				if (chosen_walls.includes(x+y*this.divide)) del = [floor(random(M)), -1];
-			} else {
-				if (chosen_walls.includes(x+y*this.divide)) del = [floor(random(M)), floor(random(N))];
+			if (x != this.divide - 1) {
+				if (this.splitmaze[x][y].wall_state[1] == 0) del[0] = floor(random(M));
 			}
-
-
+			if (y != this.divide - 1) {
+				if (this.splitmaze[x][y].wall_state[2] == 0) del[1] = floor(random(N));
+			}
 			if (del[0] != -1) {
 				this.grid[(x+1)*N - 1][y*M + del[0]].visited('E');
 				this.grid[(x+1)*N][y*M + del[0]].visited('W');
@@ -246,6 +249,7 @@ class Grid {
 			*/
 			for (let i = 0; i < this.divide*this.divide; i++) {
 				let x = index(i, this.divide*this.divide);
+				//this.current[i] = this.grid[x[0]*this.n/this.divide + floor(random(this.n/this.divide))][x[1]*this.m/this.divide + floor(random(this.m/this.divide))];
 				this.current[i] = this.grid[x[0]*this.n/this.divide][x[1]*this.m/this.divide];
 				this.stack[i][0] = this.current[i];
 			}			
@@ -263,7 +267,6 @@ class Grid {
 		}
 	}
 	initgame() {
-		
 		let factor = 0;
 		if (this.m%2 != 0) factor = 1
 		this.player = new Player(this.grid[0][floor(this.m / 2) - 1 + factor]);
@@ -326,16 +329,21 @@ class Grid {
 				break;
 			case 2:
 				this.player.current.state = 1;
-				this.state = 2;
+				let factor = 0;
+				if (this.m%2 != 0) factor = 1
+				this.player = new Player(this.grid[0][floor(this.m / 2) - 1 + factor]);
+				this.state = 3;
+				this.player.current.state = 3;
 				break;
 		}
 			
 	}
-	check_state(ws = -1, N = -1) {
+	check_state(ws = -1, N = -1,) {
 		let count = 0;
 		for (let i = 0; i < this.n; i++) {
 			for (let j = 0; j < this.m; j++) {
 				if (N != -1) {
+					if (i < this.divide && j < this.divide) this.splitmaze[i][j].state = N;
 					this.grid[i][j].state = N;
 				} else {
 					if (this.grid[i][j].state >= 1) {
@@ -343,19 +351,43 @@ class Grid {
 					}
 				}
 				if (ws == 1) {
-					this.grid[i][j].wall_state = [1, 1, 1, 1]
+					if (i < this.divide && j < this.divide) this.splitmaze[i][j].wall_state = [1, 1, 1, 1];
+					this.grid[i][j].wall_state = [1, 1, 1, 1];
 				}
 			}
 		}
 		if (count != 0) return count;
 	}
-}
+	help_maze() {
+		this.splitcurrent = this.splitmaze[floor(random(this.divide - 1))][floor(random(this.divide - 1))];
+		this.splitstack = [this.splitcurrent]
+		while(this.splitstack.length != 0) {
 
+			if (this.splitcurrent) {
+				let res = this.choose_neighbour(-1, this.splitmaze, this.splitcurrent, 0, 0, this.divide, this.divide);
+				if (res[0]) {
+					let dir = res[1];
+					this.splitcurrent.state = 1;
+					this.splitcurrent.visited(dir);
+					this.splitcurrent = res[0];
+					this.splitcurrent.visited(this.complement(dir))
+					this.splitcurrent.state = 2;
+					this.splitstack.push(this.splitcurrent);
+				}
+				else {
+					this.splitcurrent.state = 1;
+					this.splitcurrent = this.splitstack.pop()
+					if (this.splitcurrent) this.splitcurrent.state = 2;
+				}
+			}
+		}
+		this.splitcurrent.state = 1;
+	}
+}
 function index(i, max) {
 	let n = sqrt(max);
 	return [i%n, floor(i/n)%n]
 }
-
 function get_n_highest(n, L) {
 	let res = [];
 	for (const el of L) {

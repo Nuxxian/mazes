@@ -12,22 +12,23 @@
 //    2. make it the current cell
 
 let grid;
-let bwidth = 50;
+let bwidth = 25;
 let bcolor = 150;
+let divide = 8;
 
 function setup() {
   createCanvas(windowWidth, windowHeight - 1);
-  let easyn = 8//width
-  let easym = 7//height /* 10 */ 
-  let n = floor(min(easyn, ((width - 50)/bwidth))) ;
-  let m = floor(min(easym, ((height - 50)/bwidth)));
+  let easyn = width
+  let easym = height /* 10 */ 
+  let n = 24//floor(min(easyn, ((width - 50)/bwidth))) + 1;
+  let m = 24//floor(min(easym, ((height - 50)/bwidth))) - 2;
   console.log(n, m)
-  grid = new Grid(n, m, bwidth, bcolor);
+  grid = new Grid(n, m, bwidth, bcolor, divide);
   
 }
 
 function draw() {
- // frameRate(10)
+  frameRate(15)
   background(25);
   grid.update();
 }
