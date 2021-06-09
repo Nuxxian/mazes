@@ -12,25 +12,29 @@
 //    2. make it the current cell
 
 let grid;
-let bwidth = 25;
+let bwidth = 50;
 let bcolor = 150;
-let divide = 8;
+let divide = 3;
+let righwall;
+let go = false;
 
 function setup() {
   createCanvas(windowWidth, windowHeight - 1);
   let easyn = width
   let easym = height /* 10 */ 
-  let n = 40//floor(min(easyn, ((width - 50)/bwidth))) + 1;
-  let m = 24//floor(min(easym, ((height - 50)/bwidth))) - 2;
+  let n = 12//floor(min(easyn, ((width - 50)/bwidth))) + 1;
+  let m = 12//floor(min(easym, ((height - 50)/bwidth))) - 2;
   console.log(n, m)
   grid = new Grid(n, m, bwidth, bcolor, divide);
+  rightwall = new Scout(grid);
   
 }
 
 function draw() {
-  frameRate(15)
+  //frameRate(15)
   background(25);
   grid.update();
+  if (go) rightwall.wall_follower();
 }
 
 function mousePressed() {
@@ -39,6 +43,9 @@ function mousePressed() {
 
 function keyReleased() {
   grid.event = 'keyReleased'
+  if (keyCode == 13) {
+    go = true;
+  }
 }
 
 function windowResized()

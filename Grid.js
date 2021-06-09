@@ -25,7 +25,6 @@ class Grid {
 		if (this.m%2 == 1) factor = 0;
 		this.startpos = [0, floor(this.m/2)+factor]
 		this.endpos = [this.n - 1, floor(this.m/2) + factor]
-		console.log(this.startpos, this.endpos)
 
 		for (let i = 0; i < this.divide*this.divide; i++) {
 			this.stack[i] = [];	
@@ -41,6 +40,8 @@ class Grid {
 			this.splitcurrent;
 			this.splitstack;
 		}
+
+		this.rightwall;
 		
 	}
 	update() {
@@ -70,6 +71,10 @@ class Grid {
 				frameRate(60)
 				this.draw_border();
 				this.play();
+				break;
+			case 5:
+				this.draw_border();
+				this.scout.wall_follower();
 				break;
 			default:
 				this.draw_border();
@@ -203,26 +208,36 @@ class Grid {
 		}
 	}
 	//end algorithms
-	has_available_neighbour() {
-        let i = this.current.i;
-		let j = this.current.j;
-		if (this.grid[i-1][j]) {
-			if (this.grid[i-1][j].state != 1) return true;
-		}
-		if (this.grid[i+1][j]) {
-			if (this.grid[i-+1][j].state != 1) return true;
-		}
-		if (this.grid[i][j-1]) {
-			if (this.grid[i][j-1].state != 1) return true;
-		}
-		if (this.grid[i][j+1]) {
-			if (this.grid[i][j+1].state != 1) return true;
+	freecell(dir) {
+        let i = this.player.current.i;
+		let j = this.player.current.j;
+		console.log(i, j)
+		switch(dir) {
+			case 'W':
+				if (this.grid[i-1][j]) {
+					if (this.grid[i][j].wall_state[3] == 0) return this.grid[i-1][j];
+				}
+				break;
+			case 'E':
+				if (this.grid[i+1][j]) {
+					if (this.grid[i][j].wall_state[1] == 0) return this.grid[i+1][j];
+				}
+				break;
+			case 'N':
+				if (this.grid[i][j-1]) { 
+					if (this.grid[i][j].wall_state[0] == 0) return this.grid[i][j-1];
+				}
+				break;
+			case 'S':
+				if (this.grid[i][j+1]) { 
+					if (this.grid[i][j].wall_state[2] == 0) return this.grid[i][j+1];
+				}
+				break;
 		}
 		return false;
     }
 	split_up() {
 		this.help_maze();
-		console.log(this.splitmaze)
 		for (let i = 0; i < this.divide*this.divide; i++) {
 			let [x, y] = index(i, this.divide*this.divide);
 			let N = this.n/this.divide;
