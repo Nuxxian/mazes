@@ -12,9 +12,9 @@
 //    2. make it the current cell
 
 let grid;
-let bwidth = 50;
+let bwidth = 25;
 let bcolor = 150;
-let divide = 3;
+let divide = 6;
 let righwall;
 let go = false;
 
@@ -22,8 +22,8 @@ function setup() {
   createCanvas(windowWidth, windowHeight - 1);
   let easyn = width
   let easym = height /* 10 */ 
-  let n = 12//floor(min(easyn, ((width - 50)/bwidth))) + 1;
-  let m = 12//floor(min(easym, ((height - 50)/bwidth))) - 2;
+  let n = 60//floor(min(easyn, ((width - 50)/bwidth))) + 1;
+  let m = 30//floor(min(easym, ((height - 50)/bwidth))) - 2;
   console.log(n, m)
   grid = new Grid(n, m, bwidth, bcolor, divide);
   rightwall = new Scout(grid);

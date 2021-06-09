@@ -16,43 +16,45 @@ class Scout {
     }
 
     wall_follower() {
-        frameRate(2)
         if (this.state == 0) {
             this.player = this.grid.player.current
+            this.player.state = 6
             this.visited = []
             this.state = 1;
         }
         let dir = ['S', 'E', 'N', 'W'];
-        if (this.heading == 'left') dir = ['N', 'E', 'S', 'W'];
-      
+        if (this.heading == 'left') dir = ['N', 'W', 'S', 'E'];
         this.posx = this.player.i
         this.posy = this.player.j
         dir = removedir(this.posx, this.posy, this.grid.n, this.grid.m, dir);
-        console.log(dir)
-        if (this.posx == this.goalx && this.posy == this.goaly) this.grid.state = 4;
-        this.player.state = 1;
-
+        if (this.posx == this.goalx && this.posy == this.goaly) {
+            this.grid.state = 4
+            return;
+        }
+        this.player.state = 4;
         for (const direction of dir) {
             let next = this.grid.freecell(direction);
             if (next) {
-                if (this.avoid.includes(next) || this.visited.includes(next));
-                else this.player = next;
-                console.log('next')
-                break;
+                if (this.avoid.includes(next) || this.visited.includes(next)) next = 0;
+                else {
+                    this.player = next;
+                    break;
+                }
             }
         }
         if (this.visited.includes(this.player)) {
-            let temp = this.visited.pop();
-            this.avoid.push(temp);
-            this.player = temp;
-            console.log('return')
+            let temp = this.visited.pop()
+            temp.state = 5;
+            this.avoid.push(temp)
+            this.player = this.visited.pop();
         }
-        this.player.state = 3;
+        this.player.state = 6;
         this.visited.push(this.player);
         this.changeplayer(this.player);
 
     }
     changestates() {
+
 
     }
     changeplayer(newplayer) {

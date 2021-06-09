@@ -8,7 +8,7 @@ class Cell {
         this.y = y0 + width*j;
         this.rect_color;
         this.wall_state = [1, 1, 1, 1]; //N, O, Z, W ; 1 = show, 0 = hide
-        this.state = 0; //0: unvisited, 1: visited, 2: current; 3: player
+        this.state = 0; //0: unvisited, 1: visited, 2: current; 3: player; 4: visited; 5: avoid
     }
     update() {
         this.show();
@@ -26,6 +26,16 @@ class Cell {
                 break;
             case 3:
                 this.rect_color = [19, 141, 117];
+                break;
+            case 4:
+                this.rect_color = [249, 231, 159]
+                break;
+            case 5:
+                this.rect_color = [174, 214, 241]
+                break;
+            case 6: 
+                this.rect_color = [23, 165, 137]
+                break;
         }
         push();
             strokeWeight(0)
@@ -33,9 +43,9 @@ class Cell {
             rect(this.x, this.y, this.width, this.width);
         pop();
         push();
-            stroke(200);
+            stroke(255);
             if (this.state == 0) strokeWeight(1);
-            else strokeWeight(2);
+            else strokeWeight(4);
             if (this.wall_state[0]) line(this.x, this.y, this.x + this.width, this.y);
             if (this.wall_state[1]) line(this.x + this.width, this.y, this.x + this.width, this.y + this.width);
             if (this.wall_state[2]) line(this.x, this.y + this.width, this.x + this.width, this.y + this.width);

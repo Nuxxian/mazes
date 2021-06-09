@@ -49,7 +49,7 @@ class Grid {
 		for (let i = 0; i < this.n; i++) {
 			for (let j = 0; j < this.m; j++) {
 				this.grid[i][j].update();
-				if (i < this.divide && j < this.divide) this.splitmaze[i][j].update()
+				//if (i < this.divide && j < this.divide && this.divide > 1) this.splitmaze[i][j].update()
 			}
 		}
 		this.keyReleased();
@@ -237,6 +237,7 @@ class Grid {
 		return false;
     }
 	split_up() {
+		
 		this.help_maze();
 		for (let i = 0; i < this.divide*this.divide; i++) {
 			let [x, y] = index(i, this.divide*this.divide);
@@ -292,7 +293,7 @@ class Grid {
 		let factor = 0;
 		if (this.m%2 != 0) factor = 1
 		this.player = new Player(this.grid[0][floor(this.m / 2) - 1 + factor]);
-		this.split_up()
+		if (this.divide > 1) this.split_up();
 		this.player.current.state = 3
 		this.state = 3;
 	}
